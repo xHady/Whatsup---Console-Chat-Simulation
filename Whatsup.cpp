@@ -23,6 +23,16 @@ class Chat_LinkedList{
         length = 0;
         head = tail = NULL;
     }
+    ~Chat_LinkedList() {
+        ChatNode* curr = head;
+        while (curr) {
+            ChatNode* next = curr->next;
+            delete curr;
+            curr = next;
+        }
+        head = tail = NULL;
+        length = 0;
+    }
     void initMyNumber(int num)
     {
         myNumber = num;
@@ -96,6 +106,19 @@ class Contacts_Stack{
     {
         length = 0;
         top = NULL;
+    }
+    ~Contacts_Stack()
+    {
+        ContactNode* curr = top;
+        while(curr != nullptr)
+        {
+            ContactNode* nextNode = curr->next;
+            // Chat_LinkedList destructor will clean chat messages
+            delete curr;
+            curr = nextNode;
+        }
+        top = nullptr;
+        length = 0;
     }
     void initMyNumber(int num)
     {
@@ -187,8 +210,9 @@ class Contacts_Stack{
         if(empty)
         {
             cout<<"There's no Contacts yet, Make some friends and Come Again.\n";
+            return;
         }
-        Curr->chat.drawLine(20);
+        top->chat.drawLine(20);
     }
     int getChatWithIndex(unsigned short int indx)
     {
@@ -216,7 +240,12 @@ unsigned short int currScreen = 1;
 
 void flushBuffer()
 {
+    // system("cls"); OLD
+    #ifdef _WIN32
     system("cls");
+    #else
+        system("clear");
+    #endif
 }
 void viewChat(unsigned short int index)
 {
