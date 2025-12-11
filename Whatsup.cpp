@@ -135,35 +135,34 @@ class Contacts_Stack{
         }
     }
     
-    string makeChatKey(int num1, int num2)
+    static string makeChatKey(int num1, int num2)
     {
         if(num1 > num2)
             swap(num1, num2);
         return to_string(num1) + "_" + to_string(num2);
     }
-    void insertContactNode(int senderNum, int recieverNum, string message)
+    void insertContactNode(int senderNum, int receiverNum, string message)
     {
         ContactNode *newNode = new ContactNode();
-        Chat_LinkedList newChat;
-        newChat.addMessage(senderNum, message);
-        newChat.initMyNumber(myNumber);
-        newNode->chatKey = makeChatKey(senderNum, recieverNum);
+        newNode->chatKey = makeChatKey(senderNum, receiverNum);
         newNode->pNumber = senderNum;
-        newNode->sNumber = recieverNum;
-        newNode->chat = newChat;
+        newNode->sNumber = receiverNum;
+        newNode->chat.addMessage(senderNum, message);
+        newNode->chat.initMyNumber(myNumber);
         newNode->next = top;
         top = newNode;
         length++;
         cout<<"Contact with chatKey { "<<newNode->chatKey<<" } Created.\n";
     }
-    void sendMessage(int senderNum, int recieverNum, string message)
+    void sendMessage(int senderNum, int receiverNum, string message)
     {
+        string chatKey = makeChatKey(senderNum, receiverNum);
         if(length == 0)
         {
-            insertContactNode(senderNum, recieverNum, message);
+            insertContactNode(senderNum, receiverNum, message);
             return;
         }
-        if(top->chatKey == makeChatKey(senderNum, recieverNum))
+        if(top->chatKey == chatKey)
         {
             top->chat.addMessage(senderNum, message);
             return;
@@ -172,7 +171,7 @@ class Contacts_Stack{
         ContactNode *temp = Curr->next;
         while(temp != NULL)
         {
-            if(temp->chatKey == makeChatKey(senderNum, recieverNum))
+            if(temp->chatKey == chatKey)
             {
                 Curr->next = temp->next;
                 temp->next = top;
@@ -184,7 +183,7 @@ class Contacts_Stack{
             temp = temp->next;
             Curr = Curr->next;
         }
-        insertContactNode(senderNum, recieverNum, message);
+        insertContactNode(senderNum, receiverNum, message);
     }
     void viewMyContacts()
     {
@@ -200,11 +199,10 @@ class Contacts_Stack{
                 if(empty)
                     empty = 0;
                 cout<<indx<<" ) ";
-                Curr->chat.drawLine(16);
                 cout<<"Contact : "<<otherNum<<"\n";
-                cout<<"Last Message : "<<Curr->chat.getLastMessage()<<"\n";
+                cout<<"    Last Message : "<<Curr->chat.getLastMessage()<<"\n";
+                indx++;
             }
-            indx++;
             Curr = Curr->next;
         }
         if(empty)
@@ -216,20 +214,26 @@ class Contacts_Stack{
     }
     int getChatWithIndex(unsigned short int indx)
     {
-        unsigned short int counter = 1;
+        unsigned short int counter = 0;
         ContactNode *Curr = top;
-        while(counter < indx)
+        while(Curr != NULL)
         {
-            counter++;
+            if(myNumber == Curr->pNumber || myNumber == Curr->sNumber)
+            {
+                counter++;
+
+                if(counter == indx)
+                {
+                    Curr->chat.printChat();
+                    return (myNumber == Curr->pNumber) ? Curr->sNumber : Curr->pNumber;
+                }
+            }
+
             Curr = Curr->next;
         }
-        if(Curr == NULL)
-        {
-            cout<<"Invalid Index.\n";
-            return -1;
-        }
-        Curr->chat.printChat();
-        return ( myNumber == Curr->pNumber ) ? Curr->sNumber : Curr->pNumber;
+
+        cout << "Invalid Index.\n";
+        return -1;
     }
 };
 
@@ -259,11 +263,20 @@ void viewChat(unsigned short int index)
     switch(choose)
     {
         case 1:
-            cout<<"\nEnter Message to Send.\nMessage : ";
-            getline(cin >> ws, message);
-            ContactsList.sendMessage(myNumber, SenderNumber, message);
-            flushBuffer();
-            viewChat(index);
+            if(SenderNumber == -1)
+            {
+                cout<<"\nThere's no Contacts yet.";
+                sleep_for(seconds(1));
+                currScreen = 1;
+            }
+            else
+            {
+                cout<<"\nEnter Message to Send.\nMessage : ";
+                getline(cin >> ws, message);
+                ContactsList.sendMessage(myNumber, SenderNumber, message);
+                flushBuffer();
+                viewChat(index);
+            }
             break;
         case 2:
             currScreen = 3;
@@ -307,16 +320,16 @@ void viewContacts()
 void sendTo()
 {
     int sender;
-    int reciever;
+    int receiver;
     unsigned short int choose;
     string message;
     cout<<"Enter Sender Number.\nNumber : ";
     cin>>sender;
-    cout<<"\nEnter Reciever Number.\nNumber : ";
-    cin>>reciever;
+    cout<<"\nEnter Receiver Number.\nNumber : ";
+    cin>>receiver;
     cout<<"\nEnter Message to Send.\nMessage : ";
     getline(cin >> ws, message);
-    ContactsList.sendMessage(sender, reciever, message);
+    ContactsList.sendMessage(sender, receiver, message);
     sleep_for(seconds(1));
     cout<<"Message Sent.\n";
     cout<<"1 ) Return                  2 ) View Contacts\n";
