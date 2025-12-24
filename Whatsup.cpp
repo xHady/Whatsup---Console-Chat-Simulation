@@ -60,7 +60,7 @@ class Chat_LinkedList{
         cout<<"Error: Sender Invalid, Message { "<<msg<<" } cannot sent\n";
         return 0;
     }
-    void drawLine(unsigned short int count)
+    static void drawLine(unsigned short int count)
     {
         for(unsigned short int i = 0;i < count;i++)
         {
@@ -78,10 +78,7 @@ class Chat_LinkedList{
         drawLine(10);
         while(Curr != NULL)
         {
-            if(Curr->sender == myNumber)
-                cout<<"Sender : Me\n";
-            else
-                cout<<"Sender : "<<Curr->sender<<"\n";
+            cout<<"Sender : "<<( (Curr->sender == myNumber) ? "Me" : to_string(Curr->sender) )<<"\n";
             cout<<"Message : "<<Curr->message<<"\n";
             drawLine(10);
             Curr = Curr->next;
@@ -185,6 +182,7 @@ class Contacts_Stack{
         }
         insertContactNode(senderNum, receiverNum, message);
     }
+    
     void viewMyContacts()
     {
         ContactNode *Curr = top;
@@ -246,7 +244,7 @@ void flushBuffer()
 {
     // system("cls"); OLD
     #ifdef _WIN32
-    system("cls");
+        system("cls");
     #else
         system("clear");
     #endif
